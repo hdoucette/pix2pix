@@ -306,7 +306,7 @@ def DCGAN(generator, discriminator_model, img_dim, patch_size, image_dim_orderin
 
 def load(model_name, img_dim, nb_patch, bn_mode, use_mbd, batch_size):
 
- model_name == "generator_unet_upsampling":
+    if  model_name == "generator_unet_upsampling":
         model = generator_unet_upsampling(img_dim, bn_mode, model_name=model_name)
         model.summary()
         from keras.utils import plot_model

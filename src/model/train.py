@@ -37,23 +37,23 @@ def train(**kwargs):
     bn_mode = kwargs["bn_mode"]
     label_smoothing = kwargs["use_label_smoothing"]
     label_flipping = kwargs["label_flipping"]
-    dset = kwargs["dset"]
+    #dset = kwargs["dset"]
     use_mbd = kwargs["use_mbd"]
     data_dir = kwargs["data_dir"]
 
     epoch_size = n_batch_per_epoch * batch_size
 
     # Setup environment (logging directory etc)
-    general_utils.setup_logging(model_name)
-    X_full_train, X_sketch_train, X_full_val, X_sketch_val = data_utils.load_data(dset, image_data_format)
+    #general_utils.setup_logging(model_name)
+    #X_full_train, X_sketch_train, X_full_val, X_sketch_val = data_utils.load_data(dset, image_data_format)
     # Load and rescale data
     raw = np.load(os.path.join(data_dir,'ds-lymphoma-training.npz'))
-    X_full_train=raw['data']
-    X_sketch_train=raw['labels'][:,0, ...]
+    X_sketch_train=raw['data']
+    X_full_train=raw['labels'][:,0, ...]
 
     test=np.load(os.path.join(data_dir,'ds-lymphoma-test.npz'))
-    X_full_val=test['data']
-    X_sketch_val=test['labels'][:,0, ...]
+    X_sketch_val=test['data']
+    X_full_val=test['labels'][:,0, ...]
 
     img_dim = X_full_train.shape[-3:]
 

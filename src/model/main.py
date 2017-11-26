@@ -1,12 +1,10 @@
 import os
 import argparse
 
-
 def launch_training(**kwargs):
 
     # Launch training
     train.train(**kwargs)
-
 
 if __name__ == "__main__":
 
@@ -14,10 +12,10 @@ if __name__ == "__main__":
     parser.add_argument('patch_size', type=int, nargs=2, action="store", help="Patch size for D")
     parser.add_argument('--backend', type=str, default="tensorflow", help="theano or tensorflow")
     parser.add_argument('--generator', type=str, default="upsampling", help="upsampling or deconv")
-    parser.add_argument('--dset', type=str, default="facades", help="facades")
-    parser.add_argument('--batch_size', default=4, type=int, help='Batch size')
-    parser.add_argument('--n_batch_per_epoch', default=100, type=int, help="Number of training epochs")
-    parser.add_argument('--nb_epoch', default=400, type=int, help="Number of batches per epoch")
+    #parser.add_argument('--dset', type=str, default="facades", help="facades")
+    parser.add_argument('--batch_size', default=32, type=int, help='Batch size')
+    parser.add_argument('--n_batch_per_epoch', default=50, type=int, help="Number of batches per epoch")
+    parser.add_argument('--nb_epoch', default=10, type=int, help="Number of training epochs")
     parser.add_argument('--epoch', default=10, type=int, help="Epoch at which weights were saved for evaluation")
     parser.add_argument('--nb_classes', default=2, type=int, help="Number of classes")
     parser.add_argument('--do_plot', action="store_true", help="Debugging plot")
@@ -29,7 +27,6 @@ if __name__ == "__main__":
     parser.add_argument('--data_dir', default='/home/hillaryd/data/', type=str, help="")
 
     args = parser.parse_args()
-
     # Set the backend by modifying the env variable
     if args.backend == "theano":
         os.environ["KERAS_BACKEND"] = "theano"
@@ -50,7 +47,7 @@ if __name__ == "__main__":
     import train
 
     # Set default params
-    d_params = {"dset": args.dset,
+    d_params = {#"dset": args.dset,
                 "generator": args.generator,
                 "batch_size": args.batch_size,
                 "n_batch_per_epoch": args.n_batch_per_epoch,
