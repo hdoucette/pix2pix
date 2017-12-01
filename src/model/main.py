@@ -1,5 +1,10 @@
 import os
 import argparse
+import numpy as np
+
+data_dir='/home/hillaryd/data/'
+raw = np.load(os.path.join(data_dir,'ds-lymphoma-training.npz'))
+data_length=np.size(raw['data'],0)
 
 def launch_training(**kwargs):
 
@@ -14,8 +19,8 @@ if __name__ == "__main__":
     parser.add_argument('--generator', type=str, default="upsampling", help="upsampling or deconv")
     #parser.add_argument('--dset', type=str, default="facades", help="facades")
     parser.add_argument('--batch_size', default=32, type=int, help='Batch size')
-    parser.add_argument('--n_batch_per_epoch', default=50, type=int, help="Number of batches per epoch")
-    parser.add_argument('--nb_epoch', default=10, type=int, help="Number of training epochs")
+    parser.add_argument('--n_batch_per_epoch', default=data_length/32, type=int, help="Number of batches per epoch")
+    parser.add_argument('--nb_epoch', default=21, type=int, help="Number of training epochs")
     parser.add_argument('--epoch', default=10, type=int, help="Epoch at which weights were saved for evaluation")
     parser.add_argument('--nb_classes', default=2, type=int, help="Number of classes")
     parser.add_argument('--do_plot', action="store_true", help="Debugging plot")

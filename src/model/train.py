@@ -40,6 +40,7 @@ def train(**kwargs):
     #dset = kwargs["dset"]
     use_mbd = kwargs["use_mbd"]
     data_dir = kwargs["data_dir"]
+    save_epoch=kwargs["epoch"]
 
     epoch_size = n_batch_per_epoch * batch_size
 
@@ -74,6 +75,7 @@ def train(**kwargs):
                                       bn_mode,
                                       use_mbd,
                                       batch_size)
+        print(generator_model.summary())
         # Load discriminator model
         discriminator_model = models.load("DCGAN_discriminator",
                                           img_dim_disc,
@@ -156,7 +158,7 @@ def train(**kwargs):
             print("")
             print('Epoch %s/%s, Time: %s' % (e + 1, nb_epoch, time.time() - start))
 
-            if e % 5 == 0:
+            if e % save_epoch == 0:
                 gen_weights_path = os.path.join('../../models/%s/gen_weights_epoch%s.h5' % (model_name, e))
                 generator_model.save_weights(gen_weights_path, overwrite=True)
 

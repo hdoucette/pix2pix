@@ -8,6 +8,8 @@ from keras.layers.pooling import MaxPooling2D
 import keras.backend as K
 import numpy as np
 
+conv_depth=8
+nb_filters = 64
 
 def minb_disc(x):
     diffs = K.expand_dims(x, 3) - K.expand_dims(K.permute_dimensions(x, [1, 2, 0]), 0)
@@ -50,6 +52,7 @@ def lambda_output(input_shape):
 def conv_block_unet(x, f, name, bn_mode, bn_axis, bn=True, strides=(2,2)):
 
     x = LeakyReLU(0.2)(x)
+    x = Conv2D(f, (3, 3), strides=1, name=name+'_', padding="same")(x)
     x = Conv2D(f, (3, 3), strides=strides, name=name, padding="same")(x)
     if bn:
         x = BatchNormalization(axis=bn_axis)(x)
@@ -62,6 +65,7 @@ def up_conv_block_unet(x, x2, f, name, bn_mode, bn_axis, bn=True, dropout=False)
     x = Activation("relu")(x)
     x = UpSampling2D(size=(2, 2))(x)
     x = Conv2D(f, (3, 3), name=name, padding="same")(x)
+    x = Conv2D(f, (3, 3), name=name+'_', padding="same")(x)
     if bn:
         x = BatchNormalization(axis=bn_axis)(x)
     if dropout:
@@ -87,7 +91,6 @@ def deconv_block_unet(x, x2, f, h, w, batch_size, name, bn_mode, bn_axis, bn=Tru
 
 def generator_unet_upsampling(img_dim, bn_mode, model_name="generator_unet_upsampling"):
 
-    nb_filters = 64
 
     if K.image_dim_ordering() == "channels_first":
         bn_axis = 1
@@ -102,7 +105,7 @@ def generator_unet_upsampling(img_dim, bn_mode, model_name="generator_unet_upsam
 
     # Prepare encoder filters
     nb_conv = int(np.floor(np.log(min_s) / np.log(2))) - 1
-    list_nb_filters = [nb_filters * min(8, (2 ** i)) for i in range(nb_conv)]
+    list_nb_filters = [nb_filters * min(conv_depth, (2 ** i)) for i in range(nb_conv)]
 
     # Encoder
     list_encoder = [Conv2D(list_nb_filters[0], (3, 3),
@@ -133,7 +136,7 @@ def generator_unet_upsampling(img_dim, bn_mode, model_name="generator_unet_upsam
     x = Activation("relu")(list_decoder[-1])
     x = UpSampling2D(size=(2, 2))(x)
     x = Conv2D(nb_channels, (3, 3), name="last_conv", padding="same")(x)
-    x = Activation("tanh")(x)
+    x = Activation("relu")(x)
 
     generator_unet = Model(inputs=[unet_input], outputs=[x])
 
@@ -144,7 +147,6 @@ def generator_unet_deconv(img_dim, bn_mode, batch_size, model_name="generator_un
 
     assert K.backend() == "tensorflow", "Not implemented with theano backend"
 
-    nb_filters = 64
     bn_axis = -1
     h, w, nb_channels = img_dim
     min_s = min(img_dim[:-1])
@@ -153,7 +155,7 @@ def generator_unet_deconv(img_dim, bn_mode, batch_size, model_name="generator_un
 
     # Prepare encoder filters
     nb_conv = int(np.floor(np.log(min_s) / np.log(2)))
-    list_nb_filters = [nb_filters * min(8, (2 ** i)) for i in range(nb_conv)]
+    list_nb_filters = [nb_filters * min(conv_depth, (2 ** i)) for i in range(nb_conv)]
 
     # Encoder
     list_encoder = [Conv2D(list_nb_filters[0], (3, 3),
@@ -191,7 +193,7 @@ def generator_unet_deconv(img_dim, bn_mode, batch_size, model_name="generator_un
     x = Activation("relu")(list_decoder[-1])
     o_shape = (batch_size,) + img_dim
     x = Deconv2D(nb_channels, (3, 3), output_shape=o_shape, strides=(2, 2), padding="same")(x)
-    x = Activation("tanh")(x)
+    x = Activation("relu")(x)
 
     generator_unet = Model(inputs=[unet_input], outputs=[x])
 
@@ -215,9 +217,8 @@ def DCGAN_discriminator(img_dim, nb_patch, bn_mode, model_name="DCGAN_discrimina
     else:
         bn_axis = -1
 
-    nb_filters = 64
     nb_conv = int(np.floor(np.log(img_dim[1]) / np.log(2)))
-    list_filters = [nb_filters * min(8, (2 ** i)) for i in range(nb_conv)]
+    list_filters = [nb_filters * min(conv_depth, (2 ** i)) for i in range(nb_conv)]
 
     # First conv
     x_input = Input(shape=img_dim, name="discriminator_input")
@@ -238,6 +239,7 @@ def DCGAN_discriminator(img_dim, nb_patch, bn_mode, model_name="DCGAN_discrimina
     PatchGAN = Model(inputs=[x_input], outputs=[x, x_flat], name="PatchGAN")
     print("PatchGAN summary")
     PatchGAN.summary()
+
 
     x = [PatchGAN(patch)[0] for patch in list_input]
     x_mbd = [PatchGAN(patch)[1] for patch in list_input]
